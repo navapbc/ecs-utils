@@ -3,8 +3,8 @@ import os
 
 from setuptools import find_packages, setup
 
-INSTALL_DEPS = ['boto3>=1.5.28',
-                'botocore>=1.10.73']
+INSTALL_DEPS = ['boto3>=1.8.5',
+                'botocore>=1.11.5']
 
 def read(fname):
     """Read a file from the filesystem."""
