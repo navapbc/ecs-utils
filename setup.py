@@ -3,10 +3,6 @@ import os
 
 from setuptools import find_packages, setup
 
-boto3==1.5.28
-botocore==1.10.73
-pytest==3.4.0
-virtualenv==15.1.0
 INSTALL_DEPS = ['boto3>=1.5.28',
                 'botocore>=1.10.73']
 
