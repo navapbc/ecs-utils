@@ -15,3 +15,9 @@ Have a recent version of python 3 (>= 3.5) and pip installed. Then install with 
 ```
 pip install git+git://github.com/navapbc/ecs-scripts#egg=ecs-util
 ```
+
+### Configure AWS access
+
+These scripts use AWS boto which assumes you have an AWS account and have set up credentials on your local machine:
+
+https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html
