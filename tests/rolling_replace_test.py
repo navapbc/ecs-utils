@@ -1,7 +1,5 @@
 """Test case for ecs_utils."""
 import copy
-import datetime
-import unittest
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -39,17 +37,18 @@ DESCRIBE_INSTANCES = {
 
 # postive base test case
 # batch of 2, 1 instance each batch, 2nd batch takes 2 tries
-SIDE_EFFECT_RESPONSES = []
+MOCK_RESPONSES = []
 batch1 = copy.deepcopy(DESCRIBE_INSTANCES)
-SIDE_EFFECT_RESPONSES.append(batch1)
-SIDE_EFFECT_RESPONSES.append(batch1)
+MOCK_RESPONSES.append(batch1)
+MOCK_RESPONSES.append(batch1)
 
 batch2 = copy.deepcopy(DESCRIBE_INSTANCES)
 batch2['containerInstances'][0]['ec2InstanceId'] = 'baz'
-batch2_iter2 = copy.deepcopy(batch2) # running count 0
+batch2_iter2 = copy.deepcopy(batch2)  # running count 0
 batch2['containerInstances'][0]['runningTasksCount'] = 1
-SIDE_EFFECT_RESPONSES += [batch2, batch2]
-SIDE_EFFECT_RESPONSES += [batch2_iter2, batch2_iter2]
+MOCK_RESPONSES += [batch2, batch2]
+MOCK_RESPONSES += [batch2_iter2, batch2_iter2]
+
 
 class RollingTestCase(TestCase):
     """Test the roling_replace module."""
@@ -67,12 +66,12 @@ class RollingTestCase(TestCase):
         mock_poll.return_value = True
         mock_client.list_services.return_value = GOOD_SERVICE
         mock_client.list_container_instances.return_value = INSTANCE_ARNS
-        mock_client.describe_container_instances.side_effect = SIDE_EFFECT_RESPONSES
+        mock_client.describe_container_instances.side_effect = MOCK_RESPONSES
         rolling_replace.rolling_replace_instances(
             mock_client, mock_client, 'cluster-foo', 2, '', False
         )
 
-    @patch("scripts.utils.printWarning")
+    @patch("scripts.utils.print_warning")
     @patch('scripts.ecs_utils.poll_cluster_state')
     @patch('boto3.client')
     def test_replace_warn_ami(self, mock_boto, mock_poll, mock_warn):
@@ -80,7 +79,7 @@ class RollingTestCase(TestCase):
         mock_poll.return_value = True
         mock_client.list_services.return_value = GOOD_SERVICE
         mock_client.list_container_instances.return_value = INSTANCE_ARNS
-        mock_client.describe_container_instances.side_effect = SIDE_EFFECT_RESPONSES
+        mock_client.describe_container_instances.side_effect = MOCK_RESPONSES
         rolling_replace.rolling_replace_instances(
             mock_client, mock_client, 'cluster-foo', 2, 'ami1', False
         )
@@ -94,7 +93,7 @@ class RollingTestCase(TestCase):
         mock_poll.return_value = True
         mock_client.list_services.return_value = GOOD_SERVICE
         mock_client.list_container_instances.return_value = INSTANCE_ARNS
-        mock_client.describe_container_instances.side_effect = SIDE_EFFECT_RESPONSES
+        mock_client.describe_container_instances.side_effect = MOCK_RESPONSES
         rolling_replace.rolling_replace_instances(
             mock_client, mock_client, 'cluster-foo', 2, 'ami2', False
         )
@@ -106,7 +105,7 @@ class RollingTestCase(TestCase):
         mock_poll.return_value = True
         mock_client.list_services.return_value = GOOD_SERVICE
         mock_client.list_container_instances.return_value = INSTANCE_ARNS
-        responses = copy.deepcopy(SIDE_EFFECT_RESPONSES)
+        responses = copy.deepcopy(MOCK_RESPONSES)
         # modify response to make batch2 chronically bad
         responses[4]['containerInstances'][0]['runningTasksCount'] = 1
         responses[5]['containerInstances'][0]['runningTasksCount'] = 1
@@ -118,7 +117,7 @@ class RollingTestCase(TestCase):
                 mock_client, mock_client, 'cluster-foo', 2, '', False
             )
 
-    @patch("scripts.utils.printWarning")
+    @patch("scripts.utils.print_warning")
     @patch('scripts.ecs_utils.poll_cluster_state')
     @patch('boto3.client')
     def test_replace_prevent_downtime(self, mock_boto, mock_poll, mock_warn):
@@ -132,7 +131,7 @@ class RollingTestCase(TestCase):
                 mock_client, mock_client, 'cluster-foo', 1, '', False
             )
         mock_warn.assert_called_with(
-           'Terminating 2 instances will cause downtime.'
+            'Terminating 2 instances will cause downtime.'
         )
 
     @patch('boto3.client')
@@ -142,4 +141,3 @@ class RollingTestCase(TestCase):
             rolling_replace.rolling_replace_instances(
                 mock_client, mock_client, 'cluster-foo', 3, '', False
             )
-

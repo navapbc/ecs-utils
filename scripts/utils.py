@@ -15,20 +15,22 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 
-def printProgress():
+def print_progress():
     sys.stdout.write(bcolors.OKBLUE + '.' + bcolors.ENDC)
     sys.stdout.flush()
 
-def printError(msg):
-    print(bcolors.FAIL + "ERROR: " + msg + bcolors.ENDC)
 
-def printSuccess(msg):
-    print(bcolors.OKGREEN + "SUCCESS: " + msg + bcolors.ENDC)
-
-def printInfo(msg):
-    print(bcolors.OKBLUE + "INFO: " + msg + bcolors.ENDC)
-
-def printWarning(msg):
-    print(bcolors.WARNING + "WARN: " + msg + bcolors.ENDC)
+def print_error(msg):
+    print(bcolors.FAIL + msg + bcolors.ENDC)
 
 
+def print_success(msg):
+    print(bcolors.OKGREEN + msg + bcolors.ENDC)
+
+
+def print_info(msg):
+    print(bcolors.OKBLUE + msg + bcolors.ENDC)
+
+
+def print_warning(msg):
+    print(bcolors.WARNING + msg + bcolors.ENDC)
