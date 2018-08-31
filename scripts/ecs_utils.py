@@ -14,6 +14,9 @@ SLEEP_TIME_S = 5
 
 print_progress = utils.printProgress
 
+class TimeoutException(Exception):
+    pass
+
 def print_events(response, size=10):
     for service_response in response.get('services'):
         events = service_response.get('events')
@@ -96,6 +99,10 @@ def poll_cluster_state(ecs_client, cluster_name, service_names, polling_timeout,
     last_response = []
     while services:
         time.sleep(SLEEP_TIME_S)
+        if (time.time() - start_time) > polling_timeout:
+            print_events(last_response)
+            raise TimeoutException(f'Polling timed out! Check {service_names} status.')
+
         response = ecs_client.describe_services(cluster=cluster_name, services=services)
         last_response = response
         if not response.get('services'):
@@ -106,7 +113,6 @@ def poll_cluster_state(ecs_client, cluster_name, service_names, polling_timeout,
                 # check that the service has started to change based on events
                 if not has_recent_event(service_response, start_time, stale_s):
                     continue
-            deployments = service_response.get('deployments')
             service_name = service_response.get('serviceName')
             if service_is_stable(service_response):
                 if not tasks_are_healthy(ecs_client, cluster_name, service_name):
@@ -115,10 +121,6 @@ def poll_cluster_state(ecs_client, cluster_name, service_names, polling_timeout,
                 services.remove(service_name)
                 elapsed = int(time.time() - start_time)
                 utils.printSuccess(f'{service_name} is in a steady state. Elapsed: {elapsed}s')
-
-        if (time.time() - start_time) > polling_timeout:
-            print_events(last_response)
-            raise Exception(f'Polling timed out! Check {service_names} status.')
 
 def poll_deployment_state(ecs_client, cluster_name, service_name, polling_timeout, stale_s=None):
     """ 
@@ -149,6 +151,6 @@ def poll_deployment_state(ecs_client, cluster_name, service_name, polling_timeou
 
         if (time.time() - start_time) > polling_timeout:
             print_events(last_response)
-            raise Exception(f'Polling timed out! Check {service_name} status.')
+            raise TimeoutException(f'Polling timed out! Check {service_name} status.')
 
 

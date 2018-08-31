@@ -2,7 +2,7 @@
 """
 rolling_replace.py Rolling ASG replacement script
 
-This script provides a pattern for replacing EC2 instances in an Autoscaling 
+This script provides a pattern for replacing EC2 instances in an Autoscaling
 group running ECS.
 
 It fits into a deployment pattern where the Autoscaling group is updated with
@@ -53,7 +53,7 @@ TIMEOUT_S = 900
 DRAIN_TIMEOUT_S = 120
 
 def parse_args():
-    parser = argparse.ArgumentParser(description = 'Does a rolling replacement of an ASG')
+    parser = argparse.ArgumentParser(description='Does a rolling replacement of an ASG')
     parser.add_argument('--cluster-name', required=True,
             help='ECS cluster name e.g. cluster-a')
     parser.add_argument('--region', required=True,
@@ -69,13 +69,21 @@ def parse_args():
                         )
     return parser.parse_args()
 
+
+class RollingException(Exception):
+    pass
+
+
+class RollingTimeoutException(Exception):
+    pass
+
+
 def get_ami_id(instance):
-    
     for attr in instance.get('attributes'):
         if attr.get('name') == 'ecs.ami-id':
             return attr.get('value')
     utils.printWarning(str(attributes))
-    raise Exception('No ami id found for this instance.')
+    raise RollingException('No ami id found for this instance.')
 
 def get_services(ecs_client, cluster_name):
     services = []
@@ -107,22 +115,22 @@ def get_already_updated_instances(ecs_response, ami_id):
             # because we already verified that the services were in a steady state.
             utils.printWarning(f'{instance_id} was already draining')
             continue
-        utils.printInfo(f'Instance to drain: {instance_id}')
         # batch_tasks_running += container_instance.get('runningTasksCount')
         this_ami_id = get_ami_id(container_instance)
+        utils.printInfo(f'Instance to drain: {instance_id}/{this_ami_id}')
         if this_ami_id == ami_id:
             utils.printWarning(f'{instance_id} already uses ami_id {ami_id}. Skipping.')
             instances.append(instance_id)
     return instances
 
+
 def rolling_replace_instances(ecs, ec2, cluster_name, batches, ami_id, force):
 
     services = get_services(ecs, cluster_name)
     if not services:
-        raise Exception('No services found in cluster. exiting.')
+        raise RollingException('No services found in cluster. exiting.')
     utils.printInfo(f'Checking cluster {cluster_name} that services {str(services)} are stable')
     ecs_utils.poll_cluster_state(ecs, cluster_name, services, polling_timeout=30)
-    
     instances = get_container_instance_arns(ecs, cluster_name)
     # batches determines the number of instances you want to replace at once.
     # Choose conservatively, as this process temporarily reduces your capacity.
@@ -133,17 +141,16 @@ def rolling_replace_instances(ecs, ec2, cluster_name, batches, ami_id, force):
     if len(instances) <= batch_count:
         utils.printWarning(f'Terminating {batch_count} instances will cause downtime.')
         if not force:
-            raise Exception('Quitting, use --force if downtime is acceptable.')
+            raise RollingException('Quitting, use --force if downtime is acceptable.')
     instance_batches = [instances[i:i + batch_count] for i in range(0, len(instances), batch_count)]
-
     for to_drain in instance_batches:
         if len(to_drain) >= 100:
-            raise Exception(f'Quitting, batch size exceeded 100: {batch_count}. Reduce batch size.')
+            raise RollingException(f'Quitting, batch size exceeded 100: {batch_count}. Reduce batch size.')
         response = ecs.describe_container_instances(
             cluster=cluster_name, containerInstances=to_drain)
 
         if not response.get('containerInstances'):
-            raise Exception('No containerInstances found.')
+            raise RollingException('No containerInstances found.')
 
         # don't drain or teriminate any instances that are already up to date
         # (if the user provided the --ami-id flag)
@@ -158,12 +165,10 @@ def rolling_replace_instances(ecs, ec2, cluster_name, batches, ami_id, force):
         start_time = time.time()
         while len(done_instances) < len(to_drain):
             if (time.time() - start_time) > DRAIN_TIMEOUT_S:
-                utils.printError('Polling timed out. Giving up.')
-                sys.exit(1)
+                raise RollingTimeoutException('Polling timed out. Giving up.')
             time.sleep(SLEEP_TIME_S)
             response = ecs.describe_container_instances(
                 cluster=cluster_name, containerInstances=to_drain)
-
             for container_instance in response.get('containerInstances'):
                 instance_id = container_instance.get('ec2InstanceId')
                 running_tasks = container_instance.get('runningTasksCount')
@@ -174,6 +179,7 @@ def rolling_replace_instances(ecs, ec2, cluster_name, batches, ami_id, force):
                     utils.printInfo(f'Instance {instance_id} is drained, terminate!')
                     ec2.terminate_instances(InstanceIds=[instance_id])
                     done_instances.append(instance_id)
+            utils.printInfo(f'done: {str(done_instances)} to_drain: {str(to_drain)}')
         # new instance will take as much as 10m to go into service
         # we wait for ECS to resume a steady state before moving on
         ecs_utils.poll_cluster_state(ecs, cluster_name, services, polling_timeout=TIMEOUT_S)
