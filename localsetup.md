@@ -4,8 +4,8 @@ Python is used for all of the deployment scripts. You need to first install pyth
 
 From the root of this directory:
 ```sh
-python3 -m venv ecs-scripts
-source ecs-scripts/bin/activate
+python3 -m venv ecs-util
+source ecs-util/bin/activate
 pip install -r requirements.txt
 python setup.py install
 ```

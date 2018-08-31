@@ -12,7 +12,7 @@ def read(fname):
 
 
 setup(
-    name="ecs-scripts",
+    name="ecs-util",
     version=read("VERSION"),
     author="Nava",
     author_email="devops@navahq.com",
