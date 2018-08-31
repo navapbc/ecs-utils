@@ -209,9 +209,6 @@ def rolling_replace_instances(ecs, ec2, cluster_name, batches, ami_id, force):
                     utils.print_info(f'{instance_id} is drained, terminate!')
                     ec2.terminate_instances(InstanceIds=[instance_id])
                     done_instances.append(instance_id)
-            utils.print_info(
-                f'done: {str(done_instances)} to_drain: {str(to_drain)}'
-            )
         # new instance will take as much as 10m to go into service
         # we wait for ECS to resume a steady state before moving on
         ecs_utils.poll_cluster_state(ecs, cluster_name,
