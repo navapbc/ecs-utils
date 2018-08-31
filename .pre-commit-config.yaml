@@ -1,0 +1,12 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v1.2.3
+    hooks:
+    -   id: trailing-whitespace
+    -   id: autopep8-wrapper
+    -   id: check-ast
+    -   id: check-docstring-first
+    -   id: check-merge-conflict
+    -   id: debug-statements
+    -   id: flake8
+    -   id: name-tests-test
