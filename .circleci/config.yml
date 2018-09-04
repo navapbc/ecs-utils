@@ -1,0 +1,21 @@
+version: 2
+jobs:
+  test:
+    docker:
+      - image: circleci/python:3.6.4
+    steps:
+      - checkout
+      - run:
+          name: python tests
+          command: |
+            python3 -m venv ecs-utils
+            source ecs-utils/bin/activate
+            pip install -r requirements.txt
+            python setup.py install
+            python -m pytest ./tests
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - test
