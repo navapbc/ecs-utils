@@ -15,7 +15,7 @@ AWS provides many examples of best practices for ECS in the context of using Clo
 Have a recent version of python 3 (>= 3.6) and pip installed. Then install with pip.
 
 ```
-pip install git+git://github.com/navapbc/ecs-scripts#egg=ecs-utils
+pip install git+git://github.com/navapbc/ecs-utils#egg=ecs-utils
 ```
 
 ### Configure AWS access
