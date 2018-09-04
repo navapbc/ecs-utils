@@ -5,9 +5,10 @@ from unittest.mock import patch
 
 import scripts.rolling_replace as rolling_replace
 
-# reduce timeout and polling time to speed tests
+# note: we override time.time()
 rolling_replace.TIMEOUT_S = 10
 rolling_replace.DRAIN_TIMEOUT_S = 10
+# reduce polling time to speed tests
 rolling_replace.SLEEP_TIME_S = 0
 
 GOOD_SERVICE = {
@@ -54,6 +55,7 @@ class RollingTestCase(TestCase):
     """Test the roling_replace module."""
 
     def setUp(self):
+        # time will advance by 1sec every polling iteration
         self.patcher = patch('time.time')
         self.mock_time = self.patcher.start()
         self.mock_time.side_effect = list(range(100))
