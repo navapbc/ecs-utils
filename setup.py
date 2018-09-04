@@ -15,7 +15,7 @@ setup(
     name="ecs-util",
     version=read("VERSION"),
     author="Nava",
-    author_email="devops@navahq.com",
+    author_email="devops@navapbc.com",
     description="Deployment scripts for ECS",
     license="MIT License",
     keywords="",
@@ -25,12 +25,11 @@ setup(
     python_requires='>=3.5.*',
     entry_points={
         "console_scripts": [
-            "kms_create = scripts.kms_create:main",
-            "kms_crypt = scripts.kms_crypt:main",
-            "sns = scripts.sns:main",
+            "kms-create = scripts.kms_create:main",
+            "kms-crypt = scripts.kms_crypt:main",
             "param = scripts.param:main",
-            "service_check = scripts.service_check:main",
-            "rolling_replace = scripts.rolling_replace:main"
+            "service-check = scripts.service_check:main",
+            "rolling-replace = scripts.rolling_replace:main"
         ],
     },
 )

@@ -5,37 +5,7 @@ rolling_replace.py Rolling ASG replacement script
 This script provides a pattern for replacing EC2 instances in an Autoscaling
 group running ECS.
 
-It fits into a deployment pattern where the Autoscaling group is updated with
-a new launch configuration (with a new AMI). AWS will only use the new
-config on new instances launched from that point on. So an orchestration must
-occur (using something like terraform local-exec)
-
-1. Set the instance to draining (see: AWS docs on container instance draining)
-2. Wait for it to drain
-   (I'd recommend lowering the AWS default deregistration delay of 300s)
-3. Terminate the instance
-4. Wait for the new instance (with the new AMI) to launch and tasks to
-   be scheduled there.
-5. Exit if that times out, or
-6. Continue, repeating steps 1-5, for each instance
-
-The script does the above in batches, size chosen by the user.
-
-The script makes every effort to avoid getting you into a bad place
-1. It checks that your ECS services are in a steady state *before*
-proceeding with instance replacement.
-2. For simplicity, it follows a break one, make one pattern but does so in user
-defined batch size (default is 3 batches) to ensure a small loss in capacity.
-3. It will balk if the batch size equals the current capacity
-(because that will cause downtime).
-
-However, you should consider your current autoscaling scale before using this
-script. e.g. at least, use an ASG minimum of 2 instances and deploying in 2
-batches to ensure that 1 instance is always available.
-
-This script does not rollback. If your new AMI is failing, the script will
-exit after the first batch is deployed and leave you to rollback the launch
-configuration (to the original AMI) and run the script again.
+See README.md to understand the proper usage of this script
 
 """
 import argparse
@@ -67,7 +37,7 @@ def parse_args():
     parser.add_argument('--ami-id',
                         help='AMI ID to verify in new instances.')
     parser.add_argument('--force', '-f',
-                        help="Force instance replacement.",
+                        help="Ignore downtime warning due to capacity.",
                         default=False,
                         action='store_true',
                         )
@@ -221,7 +191,7 @@ def main():
     ecs = boto3.client('ecs', args.region)
     ec2 = boto3.client('ec2', args.region)
     rolling_replace_instances(ecs, ec2, args.cluster_name,
-                              args.batches, args.ami_id, args.force)
+                              int(args.batches), args.ami_id, args.force)
 
 
 if __name__ == '__main__':
