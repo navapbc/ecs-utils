@@ -8,7 +8,7 @@ ecs-utils is a collection of useful python scripts and libraries for use with AW
 - kms-crypt: wrapper for creating kms encrypted data
 - documentation for using the above tools in a production environment
 
-AWS provides many examples of best practices for ECS in the context of using Cloudformation. These tools and docs were created to support an environment provisioned with Terraform (TODO: provide link to the example Terraform ECS template). 
+AWS provides many examples of best practices for ECS in the context of using Cloudformation. These tools and docs were created to support an environment provisioned with Terraform. An example implementation of an ECS cluster in terraform and an example application that uses AWS parameter store (and these scripts) can be found here: https://github.com/navapbc/tf-ecs-example
 
 ### Installation
 
