@@ -6,8 +6,8 @@ You need to first install python3: https://www.python.org/downloads/release/pyth
 
 From the root of this directory:
 ```sh
-python3 -m venv ecs-util
-source ecs-util/bin/activate
+python3 -m venv ecs-utils
+source ecs-utils/bin/activate
 pip install -r requirements.txt
 python setup.py develop
 ```

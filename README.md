@@ -1,6 +1,6 @@
-## ecs-util
+## ecs-utils
 
-ecs-util is a collection of useful python scripts and libraries for use with AWS Elastic Container Service (ECS). The scripts:
+ecs-utils is a collection of useful python scripts and libraries for use with AWS Elastic Container Service (ECS). The scripts:
 - rolling-replace: performs a no-downtime replacement of instances in an ECS cluster (autoscaling group)
 - service-check: polls an ECS service for health (deployment completion)
 - param: a wrapper script for interacting with AWS Parameter store
@@ -15,7 +15,7 @@ AWS provides many examples of best practices for ECS in the context of using Clo
 Have a recent version of python 3 (>= 3.5) and pip installed. Then install with pip.
 
 ```
-pip install git+git://github.com/navapbc/ecs-scripts#egg=ecs-util
+pip install git+git://github.com/navapbc/ecs-scripts#egg=ecs-utils
 ```
 
 ### Configure AWS access
