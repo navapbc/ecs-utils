@@ -22,7 +22,7 @@ setup(
     install_requires=INSTALL_DEPS,
     packages=find_packages(),
     long_description=read("README.md"),
-    python_requires='>=3.5.*',
+    python_requires='>=3.6.*',
     entry_points={
         "console_scripts": [
             "kms-create = scripts.kms_create:main",

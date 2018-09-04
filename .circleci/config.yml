@@ -7,7 +7,6 @@ jobs:
       - checkout
       - run:
           name: python tests
-          # use python 3.5.2 because circle ci doesn't have 3.6.4 by default
           command: |
             python3 -m venv ecs-utils
             source ecs-utils/bin/activate

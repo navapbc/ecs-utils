@@ -15,7 +15,7 @@ def parse_args():
 
     parser.add_argument('--region','-r', required=True,
                         help='AWS region')
-    parser.add_argument('--alias','-a', required=True,
+    parser.add_argument('--alias','-a',
                         help='alias for creating kms key')
     return parser.parse_args()
 

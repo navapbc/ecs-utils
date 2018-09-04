@@ -24,14 +24,14 @@ These scripts use AWS boto which assumes you have an AWS account and have set up
 
 https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html
 
-### roling-replace
+### rolling-replace
 
 rolling-replace Rolling ASG replacement script.
 
 This script provides a pattern for replacing EC2 instances in an Autoscaling
 group running ECS (e.g. when updating to the latest ECS agent AMI).
 
-It fits into a deployment pattern where the Autoscaling Group resource is updated with a new launch configuration (with a new AMI). That change must be followed with an orchestration where old instance are replaced. This script performs that orchestration, safely.
+It fits into a deployment pattern where the Autoscaling Group resource is updated with a new launch configuration (with a new AMI). That change must be followed with an orchestration where old instance are replaced. This script performs that orchestration, safely. It assumes you have already updated the launch cfg.(e.g. updated the desired AMI id, with terraform). This script does not update the launch cfg.
 
 1. Set an instance to draining (see: AWS docs on container instance draining)
 2. Wait for it to drain
@@ -75,3 +75,38 @@ Usage:
 service-check --cluster-name dev-vpc-cluster-a --region us-east-1 your-ecs-service-name
 ```
 
+### kms-create
+
+kms-create creates a kms key. See: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html#KMS.Client.create_key
+
+Usage:
+```
+kms-create --region us-east-1 --alias foo
+```
+
+### kms-crypt
+
+kms-crypt encrypts and decrypts data in kms. See: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html#KMS.Client.encrypt
+
+Usage
+```
+# encrypt with an existing kms key (alias: foo)
+kms-crypt --region us-east-1 --alias foo --context '{"foo":"bar"}' encrypt foosecret
+
+# decrypt (using output from previous script)
+kms-crypt --region us-east-1 --context '{"foo":"bar"}' decrypt ENCRYPTED_BLOB
+```
+
+### param
+
+param is a boto3 wrapper for use with AWS Parameter store. It supports get, put, delete and list. See: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html#SSM.Client.put_parameter
+
+Usage:
+```
+# store an value encrypted with an existing kms key
+param --region us-east-1 --kms-key-alias foo put /myservice/foo mysecret123
+# list params matching the namespace
+param --region us-east-1 list /myservice
+# get a param value
+param --region us-east-1 get /myservice/foo
+```

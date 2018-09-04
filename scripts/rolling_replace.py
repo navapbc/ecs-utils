@@ -3,7 +3,8 @@
 rolling_replace.py Rolling ASG replacement script
 
 This script provides a pattern for replacing EC2 instances in an Autoscaling
-group running ECS.
+group running ECS. It assumes you have already updated the launch cfg.
+(e.g. updated the desired AMI id). This script does not update the launch cfg.
 
 See README.md to understand the proper usage of this script
 
@@ -95,7 +96,6 @@ def get_already_updated_instances(ecs_response, ami_id):
             # state.
             utils.print_warning(f'{instance_id} was already draining')
             continue
-        # batch_tasks_running += container_instance.get('runningTasksCount')
         this_ami_id = get_ami_id(container_instance)
         utils.print_info(f'Instance to drain: {instance_id}/{this_ami_id}')
         if this_ami_id == ami_id:
@@ -140,7 +140,8 @@ def rolling_replace_instances(ecs, ec2, cluster_name, batches, ami_id, force):
             raise RollingException('Quitting, use --force to over-ride.')
     instance_batches = batch_instances(instances, batch_count)
     for to_drain in instance_batches:
-        if len(to_drain) >= 100:
+        if len(to_drain) > 100:
+            utils.print_error('Batch size exceeded 100, try using more batches.')
             raise RollingException(
                 f'Quitting, batch size exceeded 100: {batch_count}.'
             )

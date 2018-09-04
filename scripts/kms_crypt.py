@@ -60,13 +60,6 @@ def decrypt(blob, context, region):
 
 def get_kms_key_id(alias, region):
     alias = f'alias/{alias}'
-    kms_key_id = find_key_id_by_alias(region, alias)
-    if not kms_key_id:
-        utils.print_warning(f'No KMS key found for alias: {alias}')
-    return kms_key_id
-
-
-def find_key_id_by_alias(region, alias):
     client = boto3.client('kms', region)
     # TODO: fix bug where it won't find the key alias if you have over 100 kms
     # keys.
@@ -78,7 +71,11 @@ def find_key_id_by_alias(region, alias):
 
     if len(foundAliases) < 1:
         return None
-    return foundAliases[0].get('TargetKeyId')
+    kms_key_id = foundAliases[0].get('TargetKeyId')
+
+    if not kms_key_id:
+        utils.print_warning(f'No KMS key found for alias: {alias}')
+    return kms_key_id
 
 
 def main():

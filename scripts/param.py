@@ -54,12 +54,15 @@ def parse_args():
         action='store_true',
         default=False
     )
-    parser.add_argument('--kms-key-alias', '-k',
+    parser.add_argument('--kms-key-alias', '-a',
                         help='KMS key alias for storing a value encrypted',
                         default=None
                         )
     return parser.parse_args()
 
+
+class ParamException(Exception):
+    pass
 
 def list_params(namespace, region):
     """ List all parameters, filtered by the namespace"""
@@ -101,12 +104,19 @@ def put_param(name, value, region, kms_key_alias=None,
 
     try:
         if kms_key_alias:
+            kms_key = kms.get_kms_key_id(
+                kms_key_alias, region
+            )
+            if not kms_key:
+                raise ParamException(
+                    f'No key found for alias {kms_key_alias} {region}'
+                )
             result = ssm.put_parameter(
                 Name=name,
                 Description=name,
                 Value=value,
                 Type='SecureString',
-                KeyId=kms.find_key_id_by_alias(region, kms_key_alias),
+                KeyId=kms_key,
                 Overwrite=overwrite
             )
         else:
@@ -120,7 +130,6 @@ def put_param(name, value, region, kms_key_alias=None,
             )
 
         utils.print_info(json.dumps(result))
-        utils.resource_log(f'Created, Parameter Store entry: {name}')
     except botocore.exceptions.ClientError as e:
         if (e.response['Error']['Code'] == 'ParameterAlreadyExists'):
             utils.print_error(
@@ -136,7 +145,7 @@ def get_param(name, region, decrypt=True):
         return ssm.get_parameter(Name=name, WithDecryption=decrypt)
     except botocore.exceptions.ClientError as e:
         if (e.response['Error']['Code'] == 'ParameterNotFound'):
-            utils.print_error('Cannot find {name}')
+            utils.print_error(f'Cannot find {name}')
             sys.exit(1)
         raise e
 
