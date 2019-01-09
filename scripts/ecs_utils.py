@@ -139,7 +139,10 @@ def poll_cluster_state(ecs_client, cluster_name, service_names,
                         f'{service_name} tasks are still not healthy'
                     )
                     continue
-                services.remove(service_name)
+                if cluster_name in services[0]:
+                    services.remove(f'{cluster_name}/{service_name}') # 2019 arn format
+                else:
+                    services.remove(service_name)
                 elapsed = int(time.time() - start_time)
                 utils.print_success(
                     f'{service_name} is in a steady state. Elapsed: {elapsed}s'
