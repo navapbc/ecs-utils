@@ -93,7 +93,7 @@ def tasks_are_healthy(ecs_client, cluster_name, service_name):
         if not next_token:
             break
 
-    utils.print_info(f'{service_name} all {healthy} tasks are healthy')
+    utils.print_info(f'{service_name} {healthy} tasks are healthy')
     return True
 
 
@@ -104,9 +104,8 @@ def poll_cluster_state(ecs_client, cluster_name, service_names,
     """
 
     utils.print_info(
-        f'Polling services: {service_names} in cluster: {cluster_name}'
+        f'Polling services: {service_names} in cluster: {cluster_name} with timeout: {polling_timeout}s'
     )
-    utils.print_info(f'Timeout is {polling_timeout}s')
     start_time = time.time()
     services = service_names.copy()
     last_response = []

@@ -20,10 +20,10 @@ from scripts import ecs_utils
 PRINT_PROGRESS = utils.print_progress
 
 SLEEP_TIME_S = 5
-# polling timeout for ECS steady state after instance launch
+# polling timeout for ECS steady state after instance launch, or for draining
+# note, in some cases, instances will not finish draining until the previous
+# batch of instances are live.
 TIMEOUT_S = 900
-DRAIN_TIMEOUT_S = 120
-
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -165,8 +165,8 @@ def rolling_replace_instances(ecs, ec2, cluster_name, batches, ami_id, force):
         utils.print_info('wait for drain to complete...')
         start_time = time.time()
         while len(done_instances) < len(to_drain):
-            if (time.time() - start_time) > DRAIN_TIMEOUT_S:
-                raise RollingTimeoutException('Polling timed out. Giving up.')
+            if (time.time() - start_time) > TIMEOUT_S:
+                raise RollingTimeoutException('Waiting for instance to complete draining. Giving up.')
             time.sleep(SLEEP_TIME_S)
             response = ecs.describe_container_instances(
                 cluster=cluster_name, containerInstances=to_drain)
