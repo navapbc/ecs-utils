@@ -56,7 +56,7 @@ WARNING: review your current autoscaling scaling configuration before using this
 
 This script does not rollback. If your new AMI is failing, the script will exit after the first batch is deployed and leave it to you to rollback the launch configuration (to the original AMI) and run the script again.
 
-NOTE: this script considers it's work complete once all instances have been terminated and your ECS services have been restored to a steady state.  e.g. if steady state has been acheived it won't wait for the last batch of instances to come up.
+NOTE: this script considers its work complete once all instances have been terminated and your ECS services have been restored to a steady state.  e.g. if steady state has been acheived it won't wait for the last batch of instances to come up.
 
 Usage:
 ```
