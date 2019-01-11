@@ -163,7 +163,7 @@ def rolling_replace_instances(ecs, ec2, cluster_name, batches, ami_id, force):
         ecs.update_container_instances_state(cluster=cluster_name,
                                              status='DRAINING',
                                              containerInstances=to_drain)
-        utils.print_info('wait for drain to complete...')
+        utils.print_info(f'Wait for drain to complete with {TIMEOUT_S}s timeout...')
         start_time = time.time()
         while len(done_instances) < len(to_drain):
             if (time.time() - start_time) > TIMEOUT_S:
