@@ -25,7 +25,7 @@ class ParamTestCase(TestCase):
 
         mock_client = mock_boto.return_value
         mock_client.get_parameter.return_value = 'test'
-        self.assertEquals(get_param('foo','us-east-1'), 'test')
+        self.assertEqual(get_param('foo','us-east-1'), 'test')
         mock_client.get_parameter.side_effect = botocore.exceptions.ClientError(error_response,'put_parameter')
         with self.assertRaises(SystemExit):
             get_param('foo', 'us-east-1')

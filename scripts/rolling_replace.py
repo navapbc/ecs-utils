@@ -115,6 +115,7 @@ def batch_instances(instances, batch_count):
 
 def rolling_replace_instances(ecs, ec2, cluster_name, batches, ami_id, force):
 
+    replace_start_time = time.time()
     services = get_services(ecs, cluster_name)
     if not services:
         raise RollingException('No services found in cluster. exiting.')
@@ -184,7 +185,7 @@ def rolling_replace_instances(ecs, ec2, cluster_name, batches, ami_id, force):
         # we wait for ECS to resume a steady state before moving on
         ecs_utils.poll_cluster_state(ecs, cluster_name,
                                      services, polling_timeout=TIMEOUT_S)
-    utils.print_success('EC2 instance replacement complete!')
+    utils.print_success(f'EC2 instance replacement process complete! {int(time.time() - replace_start_time)}s elapsed')
 
 
 def main():

@@ -15,7 +15,7 @@ AWS provides many examples of best practices for ECS in the context of using Clo
 Have a recent version of python 3 (>= 3.6) and pip installed. Then install with pip.
 
 ```
-pip install git+git://github.com/navapbc/ecs-utils#egg=ecs-utils
+pip install git+git://github.com/navapbc/ecs-utils.git@v0.0.2
 ```
 
 ### Configure AWS access
@@ -78,7 +78,7 @@ Usage:
 service-check --cluster-name dev-vpc-cluster-a --region us-east-1 your-ecs-service-name
 ```
 
-If the script detects a deployment that is not recent it considers it "stale" and waits for new info to show up. You must run this script within 2 minutes of updating your service/task_definition. You can increase the stale threshold by providing the flag ```--stale-s```
+If the script detects a deployment that is not recent it considers it "stale" and waits for new info to show up. You must run this script within 2 minutes of updating your service/task_definition. You can increase the stale threshold by providing the flag ```--stale-s``` 
 
 ### kms-create
 
