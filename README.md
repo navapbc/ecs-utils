@@ -50,7 +50,7 @@ The script makes every effort to avoid getting you into a bad place
 2. For simplicity, it follows a break one, make one pattern but does so in user defined batch size (default is 3 batches) to ensure a small loss in capacity.
 3. It will balk if the batch size equals the current capacity
 (because that will cause downtime).
-4. You can optional specify the ami id that you're upgrading to, which will allow it to skip instances that have already been upgraded. Otherwise, it will just replace all of your instances, in batches.
+4. You can optional specify the ami id that you're upgrading to, which will allow it to skip instances that have already been upgraded. Otherwise, it will just replace all of your instances, in batches. Add the flag ```--ami-id ami-youramiid```, to check instances first.
 
 WARNING: review your current autoscaling scaling configuration before using this script.
 
@@ -78,7 +78,7 @@ Usage:
 service-check --cluster-name dev-vpc-cluster-a --region us-east-1 your-ecs-service-name
 ```
 
-If the script detects a deployment that is not recent it considers it "stale" and waits for new info to show up. You must run this script within 2 minutes of updating your service/task_definition. You can increase the stale threshold by providing the flag ```--stale-s``` 
+If the script detects a deployment that is not recent it considers it "stale" and waits for new info to show up. You must run this script within 2 minutes of updating your service/task_definition. You can increase the stale threshold by providing the flag ```--stale-s SECONDS``` 
 
 ### kms-create
 
