@@ -15,7 +15,7 @@ AWS provides many examples of best practices for ECS in the context of using Clo
 Have a recent version of python 3 (>= 3.6) and pip installed. Then install with pip.
 
 ```
-pip install git+git://github.com/navapbc/ecs-utils#egg=ecs-utils
+pip install git+git://github.com/navapbc/ecs-utils.git@v0.0.2
 ```
 
 ### Configure AWS access
@@ -50,10 +50,13 @@ The script makes every effort to avoid getting you into a bad place
 2. For simplicity, it follows a break one, make one pattern but does so in user defined batch size (default is 3 batches) to ensure a small loss in capacity.
 3. It will balk if the batch size equals the current capacity
 (because that will cause downtime).
+4. You can optional specify the ami id that you're upgrading to, which will allow it to skip instances that have already been upgraded. Otherwise, it will just replace all of your instances, in batches. Add the flag ```--ami-id ami-youramiid```, to check instances first.
 
 WARNING: review your current autoscaling scaling configuration before using this script.
 
 This script does not rollback. If your new AMI is failing, the script will exit after the first batch is deployed and leave it to you to rollback the launch configuration (to the original AMI) and run the script again.
+
+NOTE: this script considers its work complete once all instances have been terminated and your ECS services have been restored to a steady state.  e.g. if steady state has been acheived it won't wait for the last batch of instances to come up.
 
 Usage:
 ```
@@ -74,6 +77,8 @@ Usage:
 ```
 service-check --cluster-name dev-vpc-cluster-a --region us-east-1 your-ecs-service-name
 ```
+
+If the script detects a deployment that is not recent it considers it "stale" and waits for new info to show up. You must run this script within 2 minutes of updating your service/task_definition. You can increase the stale threshold by providing the flag ```--stale-s SECONDS``` 
 
 ### kms-create
 

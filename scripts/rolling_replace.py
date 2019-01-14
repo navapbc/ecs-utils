@@ -20,10 +20,10 @@ from scripts import ecs_utils
 PRINT_PROGRESS = utils.print_progress
 
 SLEEP_TIME_S = 5
-# polling timeout for ECS steady state after instance launch
+# polling timeout for ECS steady state after instance launch, or for draining
+# note, in some cases, instances will not finish draining until the previous
+# batch of instances are live.
 TIMEOUT_S = 900
-DRAIN_TIMEOUT_S = 120
-
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -115,6 +115,7 @@ def batch_instances(instances, batch_count):
 
 def rolling_replace_instances(ecs, ec2, cluster_name, batches, ami_id, force):
 
+    replace_start_time = time.time()
     services = get_services(ecs, cluster_name)
     if not services:
         raise RollingException('No services found in cluster. exiting.')
@@ -162,11 +163,11 @@ def rolling_replace_instances(ecs, ec2, cluster_name, batches, ami_id, force):
         ecs.update_container_instances_state(cluster=cluster_name,
                                              status='DRAINING',
                                              containerInstances=to_drain)
-        utils.print_info('wait for drain to complete...')
+        utils.print_info(f'Wait for drain to complete with {TIMEOUT_S}s timeout...')
         start_time = time.time()
         while len(done_instances) < len(to_drain):
-            if (time.time() - start_time) > DRAIN_TIMEOUT_S:
-                raise RollingTimeoutException('Polling timed out. Giving up.')
+            if (time.time() - start_time) > TIMEOUT_S:
+                raise RollingTimeoutException('Waiting for instance to complete draining. Giving up.')
             time.sleep(SLEEP_TIME_S)
             response = ecs.describe_container_instances(
                 cluster=cluster_name, containerInstances=to_drain)
@@ -184,7 +185,7 @@ def rolling_replace_instances(ecs, ec2, cluster_name, batches, ami_id, force):
         # we wait for ECS to resume a steady state before moving on
         ecs_utils.poll_cluster_state(ecs, cluster_name,
                                      services, polling_timeout=TIMEOUT_S)
-    utils.print_success('EC2 instance replacement complete!')
+    utils.print_success(f'EC2 instance replacement process complete! {int(time.time() - replace_start_time)}s elapsed')
 
 
 def main():

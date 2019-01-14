@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Polls until an ECS service shows a completed deployment.
-(i.e. it has completed its scheduling instructions)
+Polls until a deployed ECS service to verify a completed deployment.
+(i.e. ECS has completed its scheduling instructions)
 NOTE: this should be run immediately after a service update.
 If the script detects a deployment that is not recent it considers it
 "stale", if older than STALE_S
@@ -14,7 +14,7 @@ import time
 from scripts import utils
 from scripts import ecs_utils
 
-STALE_S = 60
+STALE_S = 120
 
 
 def parse_args():

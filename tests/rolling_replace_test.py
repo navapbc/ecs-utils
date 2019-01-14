@@ -12,7 +12,7 @@ rolling_replace.DRAIN_TIMEOUT_S = 10
 rolling_replace.SLEEP_TIME_S = 0
 
 GOOD_SERVICE = {
-    'serviceArns': ['service/foo'],
+    'serviceArns': ['cluster-foo/service/foo'],
     'services': [{
         'serviceName': 'service-foo',
         'runningCount': 2,
