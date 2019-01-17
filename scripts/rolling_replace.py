@@ -116,7 +116,7 @@ def batch_instances(instances, batch_count):
     return batches
 
 
-def rolling_replace_instances(ecs, ec2, cluster_name, batches, ami_id, force):
+def rolling_replace_instances(ecs, ec2, cluster_name, batches, ami_id, force, drain_timeout_s):
 
     replace_start_time = time.time()
     services = get_services(ecs, cluster_name)

@@ -7,7 +7,7 @@ import scripts.rolling_replace as rolling_replace
 
 # note: we override time.time()
 rolling_replace.TIMEOUT_S = 10
-rolling_replace.DRAIN_TIMEOUT_S = 10
+TIMEOUT_S = rolling_replace.TIMEOUT_S
 # reduce polling time to speed tests
 rolling_replace.SLEEP_TIME_S = 0
 
@@ -70,7 +70,7 @@ class RollingTestCase(TestCase):
         mock_client.list_container_instances.return_value = INSTANCE_ARNS
         mock_client.describe_container_instances.side_effect = MOCK_RESPONSES
         rolling_replace.rolling_replace_instances(
-            mock_client, mock_client, 'cluster-foo', 2, '', False
+            mock_client, mock_client, 'cluster-foo', 2, '', False, TIMEOUT_S
         )
 
     @patch("scripts.utils.print_warning")
@@ -83,7 +83,7 @@ class RollingTestCase(TestCase):
         mock_client.list_container_instances.return_value = INSTANCE_ARNS
         mock_client.describe_container_instances.side_effect = MOCK_RESPONSES
         rolling_replace.rolling_replace_instances(
-            mock_client, mock_client, 'cluster-foo', 2, 'ami1', False
+            mock_client, mock_client, 'cluster-foo', 2, 'ami1', False, TIMEOUT_S
         )
         mock_warn.assert_called_with(
             'biz already uses ami_id ami1. Skipping.')
@@ -97,7 +97,7 @@ class RollingTestCase(TestCase):
         mock_client.list_container_instances.return_value = INSTANCE_ARNS
         mock_client.describe_container_instances.side_effect = MOCK_RESPONSES
         rolling_replace.rolling_replace_instances(
-            mock_client, mock_client, 'cluster-foo', 2, 'ami2', False
+            mock_client, mock_client, 'cluster-foo', 2, 'ami2', False, TIMEOUT_S
         )
 
     @patch('scripts.ecs_utils.poll_cluster_state')
@@ -116,7 +116,7 @@ class RollingTestCase(TestCase):
         mock_client.describe_container_instances.side_effect = responses
         with self.assertRaises(rolling_replace.RollingTimeoutException):
             rolling_replace.rolling_replace_instances(
-                mock_client, mock_client, 'cluster-foo', 2, '', False
+                mock_client, mock_client, 'cluster-foo', 2, '', False, TIMEOUT_S
             )
 
     @patch("scripts.utils.print_warning")
@@ -130,7 +130,7 @@ class RollingTestCase(TestCase):
         with self.assertRaises(rolling_replace.RollingException):
             # batch size of 1 will take your service down
             rolling_replace.rolling_replace_instances(
-                mock_client, mock_client, 'cluster-foo', 1, '', False
+                mock_client, mock_client, 'cluster-foo', 1, '', False, TIMEOUT_S
             )
         mock_warn.assert_called_with(
             'Terminating 2 instances will cause downtime.'
@@ -141,5 +141,5 @@ class RollingTestCase(TestCase):
         mock_client = mock_boto.return_value
         with self.assertRaises(rolling_replace.RollingException):
             rolling_replace.rolling_replace_instances(
-                mock_client, mock_client, 'cluster-foo', 3, '', False
+                mock_client, mock_client, 'cluster-foo', 3, '', False, TIMEOUT_S
             )
