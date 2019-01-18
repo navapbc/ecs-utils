@@ -197,7 +197,7 @@ def main():
     ec2 = boto3.client('ec2', args.region)
     rolling_replace_instances(ecs, ec2, args.cluster_name,
                               int(args.batches), args.ami_id, args.force,
-                              args.drain_timeout_s)
+                              int(args.drain_timeout_s))
 
 
 if __name__ == '__main__':
