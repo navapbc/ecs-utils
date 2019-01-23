@@ -23,7 +23,7 @@ SLEEP_TIME_S = 5
 # polling timeout for ECS steady state after instance launch, or for draining
 # note, in some cases, instances will not finish draining until the previous
 # batch of instances are live.
-TIMEOUT_S = 900
+TIMEOUT_S = 1200
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -37,6 +37,9 @@ def parse_args():
                         help='Number of batches in replacing instances')
     parser.add_argument('--ami-id',
                         help='AMI ID to verify in new instances.')
+    parser.add_argument('--drain-timeout-s',
+                        default=TIMEOUT_S,
+                        help='Time to wait for instances to complete draining.')
     parser.add_argument('--force', '-f',
                         help="Ignore downtime warning due to capacity.",
                         default=False,
@@ -113,7 +116,7 @@ def batch_instances(instances, batch_count):
     return batches
 
 
-def rolling_replace_instances(ecs, ec2, cluster_name, batches, ami_id, force):
+def rolling_replace_instances(ecs, ec2, cluster_name, batches, ami_id, force, drain_timeout_s):
 
     replace_start_time = time.time()
     services = get_services(ecs, cluster_name)
@@ -163,10 +166,10 @@ def rolling_replace_instances(ecs, ec2, cluster_name, batches, ami_id, force):
         ecs.update_container_instances_state(cluster=cluster_name,
                                              status='DRAINING',
                                              containerInstances=to_drain)
-        utils.print_info(f'Wait for drain to complete with {TIMEOUT_S}s timeout...')
+        utils.print_info(f'Wait for drain to complete with {drain_timeout_s}s timeout...')
         start_time = time.time()
         while len(done_instances) < len(to_drain):
-            if (time.time() - start_time) > TIMEOUT_S:
+            if (time.time() - start_time) > drain_timeout_s:
                 raise RollingTimeoutException('Waiting for instance to complete draining. Giving up.')
             time.sleep(SLEEP_TIME_S)
             response = ecs.describe_container_instances(
@@ -182,9 +185,9 @@ def rolling_replace_instances(ecs, ec2, cluster_name, batches, ami_id, force):
                     ec2.terminate_instances(InstanceIds=[instance_id])
                     done_instances.append(instance_id)
         # new instance will take as much as 10m to go into service
-        # we wait for ECS to resume a steady state before moving on
+        # then we wait for ECS to resume a steady state before moving on
         ecs_utils.poll_cluster_state(ecs, cluster_name,
-                                     services, polling_timeout=TIMEOUT_S)
+                                     services, polling_timeout=drain_timeout_s)
     utils.print_success(f'EC2 instance replacement process complete! {int(time.time() - replace_start_time)}s elapsed')
 
 
@@ -193,7 +196,8 @@ def main():
     ecs = boto3.client('ecs', args.region)
     ec2 = boto3.client('ec2', args.region)
     rolling_replace_instances(ecs, ec2, args.cluster_name,
-                              int(args.batches), args.ami_id, args.force)
+                              int(args.batches), args.ami_id, args.force,
+                              int(args.drain_timeout_s))
 
 
 if __name__ == '__main__':

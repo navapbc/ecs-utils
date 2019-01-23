@@ -35,7 +35,7 @@ It fits into a deployment pattern where the Autoscaling Group resource is update
 
 1. Set an instance to draining (see: AWS docs on container instance draining)
 2. Wait for it to drain
-   (recommendation: lower the AWS default deregistration delay of 300s)
+   (recommendation: lower the AWS lb deregistration delay from its 300s default)
 3. Terminate the instance
 4. Wait for the new instance (with the new AMI) to launch and tasks to
    be scheduled there and tasks to pass container health checks.
