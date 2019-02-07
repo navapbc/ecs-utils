@@ -15,7 +15,7 @@ from scripts import utils
 from scripts import ecs_utils
 
 STALE_S = 120
-
+POLLING_TIMEOUT = 300
 
 def parse_args():
     parser = argparse.ArgumentParser(description = 'Checks an ECS service status')
@@ -27,7 +27,7 @@ def parse_args():
             help='AWS region, e.g. us-east-1')
     parser.add_argument('--stale-s', default=STALE_S,
             help='Ignore events older than --stale_s (seconds). default 60s')
-    parser.add_argument('--timeout-s', default=300,
+    parser.add_argument('--timeout-s', default=POLLING_TIMEOUT,
             help='Polling timeout --timeout_s (seconds). default 300s')
     return parser.parse_args()
 
