@@ -15,7 +15,7 @@ from scripts import utils
 from scripts import ecs_utils
 
 STALE_S = 120
-
+POLLING_TIMEOUT = 300
 
 def parse_args():
     parser = argparse.ArgumentParser(description = 'Checks an ECS service status')
@@ -27,6 +27,8 @@ def parse_args():
             help='AWS region, e.g. us-east-1')
     parser.add_argument('--stale-s', default=STALE_S,
             help='Ignore events older than --stale_s (seconds). default 60s')
+    parser.add_argument('--timeout-s', default=POLLING_TIMEOUT,
+            help='Polling timeout --timeout_s (seconds). default 300s')
     return parser.parse_args()
 
 def main():
@@ -35,7 +37,7 @@ def main():
     ecs_client = boto3.client('ecs', region)
     ecs_utils.poll_deployment_state(
         ecs_client, args.cluster_name, args.app_name,
-        polling_timeout=300, stale_s=int(args.stale_s)
+        polling_timeout=int(args.timeout_s), stale_s=int(args.stale_s)
     )
     
 

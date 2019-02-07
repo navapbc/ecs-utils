@@ -162,7 +162,7 @@ def poll_deployment_state(ecs_client, cluster_name, service_name,
     while True:
         time.sleep(SLEEP_TIME_S)
         if (time.time() - start_time) > polling_timeout:
-            print_events(last_response)
+            if last_response: print_events(last_response)
             raise TimeoutException(
                 f'Polling timed out! Check {service_name} status.'
             )
