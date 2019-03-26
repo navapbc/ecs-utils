@@ -126,7 +126,7 @@ def rolling_replace_instances(ecs, ec2, cluster_name, batches, ami_id, force, dr
         f'Checking cluster {cluster_name}, services {str(services)} are stable'
     )
     ecs_utils.poll_cluster_state(
-        ecs, cluster_name, services, polling_timeout=30
+        ecs, cluster_name, services, polling_timeout=120
     )
     instances = get_container_instance_arns(ecs, cluster_name)
     # batches determines the number of instances you want to replace at once.
