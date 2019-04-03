@@ -31,7 +31,7 @@ def get_ecs_image_url(client, cluster, service):
             cluster=cluster, services=[service]
         ).get('services')[0].get('taskDefinition')
     except Exception as err:
-        print(f'Service lookup failed: {err}')
+        sys.stderr.write(f'Service lookup failed: {err}')
         sys.exit(1)
 
     try: 
@@ -39,7 +39,7 @@ def get_ecs_image_url(client, cluster, service):
             taskDefinition=task_definition
         ).get('taskDefinition').get('containerDefinitions')[0].get('image')
     except Exception as err:
-        print(f'Task lookup failed: {err}')
+        sys.stderr.write(f'Task lookup failed: {err}')
         sys.exit(1)
     
     return image
@@ -48,7 +48,7 @@ def get_ecs_image_url(client, cluster, service):
 def main():
     args = parse_args()
     client = boto3.client('ecs', args.region)
-    print(get_ecs_image_url(client, args.cluster, args.service))
+    sys.stdout.write(get_ecs_image_url(client, args.cluster, args.service))
 
 
 if __name__ == '__main__':
