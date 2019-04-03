@@ -26,7 +26,6 @@ def parse_args():
 def get_ecs_image_url(client, cluster, service):
     """Gets the current docker image url of an ECS service"""
 
-
     try:
         task_definition = client.describe_services(
             cluster=cluster, services=[service]
