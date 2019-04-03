@@ -45,7 +45,7 @@ def get_ecs_image_url(client, cluster, service):
     return image
 
 def get_client(region):
-    return boto3.client('ecs', args.region)
+    return boto3.client('ecs', region)
 
 def main():
     args = parse_args()
