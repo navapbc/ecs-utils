@@ -11,7 +11,7 @@ from scripts import utils
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='create KMS key')
+    parser = argparse.ArgumentParser(description='Get the current docker image for an ECS service.')
 
     parser.add_argument('--region','-r', required=True,
                         help='AWS region')
