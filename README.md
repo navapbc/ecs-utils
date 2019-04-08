@@ -3,6 +3,7 @@
 ecs-utils is a collection of useful python scripts and libraries for use with AWS Elastic Container Service (ECS). The scripts:
 - rolling-replace: performs a no-downtime replacement of instances in an ECS cluster (autoscaling group)
 - service-check: polls an ECS service for health (deployment completion)
+- get-current-image: finds the current docker image url for a given service
 - param: a wrapper script for interacting with AWS Parameter store
 - kms-create: wrapper for creating kms keys
 - kms-crypt: wrapper for creating kms encrypted data

@@ -29,6 +29,7 @@ setup(
             "kms-crypt = scripts.kms_crypt:main",
             "param = scripts.param:main",
             "service-check = scripts.service_check:main",
+            "get-current-image = scripts.get_current_image:main",
             "rolling-replace = scripts.rolling_replace:main"
         ],
     },
