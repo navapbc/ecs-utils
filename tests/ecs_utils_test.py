@@ -74,6 +74,14 @@ class EcsTestCase(TestCase):
         mock_client.describe_tasks.return_value = GOOD_TASKS
         ecs_utils.poll_cluster_state(mock_client, 'cluster-foo', ['cluster-foo/service-foo'], POLL_S)
 
+    @patch('boto3.client')
+    def test_poll_cluster_matching_cluster_and_service_name(self, mock_boto):
+        mock_client = mock_boto.return_value
+        mock_client.describe_services.return_value = GOOD_SERVICE
+        mock_client.list_tasks.return_value = TASKS
+        mock_client.describe_tasks.return_value = GOOD_TASKS
+        ecs_utils.poll_cluster_state(mock_client, 'service-foo', ['service-foo'], POLL_S)
+
     @patch('scripts.ecs_utils.print_events')
     @patch('boto3.client')
     def test_poll_cluster_timeout(self, mock_boto, mock_print_events):

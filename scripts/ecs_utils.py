@@ -138,7 +138,7 @@ def poll_cluster_state(ecs_client, cluster_name, service_names,
                         f'{service_name} tasks are still not healthy'
                     )
                     continue
-                if cluster_name in services[0]:
+                if services[0].startswith(f'{cluster_name}/'):
                     services.remove(f'{cluster_name}/{service_name}') # 2019 arn format
                 else:
                     services.remove(service_name)
