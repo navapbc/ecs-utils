@@ -108,6 +108,7 @@ def poll_cluster_state(ecs_client, cluster_name, service_names,
     )
     start_time = time.time()
     services = service_names.copy()
+    is_2019_arn_format = services[0].startswith(f'{cluster_name}/')
     last_response = []
     while services:
         time.sleep(SLEEP_TIME_S)
@@ -138,8 +139,8 @@ def poll_cluster_state(ecs_client, cluster_name, service_names,
                         f'{service_name} tasks are still not healthy'
                     )
                     continue
-                if cluster_name in services[0]:
-                    services.remove(f'{cluster_name}/{service_name}') # 2019 arn format
+                if is_2019_arn_format:
+                    services.remove(f'{cluster_name}/{service_name}')
                 else:
                     services.remove(service_name)
                 elapsed = int(time.time() - start_time)
