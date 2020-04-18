@@ -67,6 +67,12 @@ def service_is_stable(service_response):
     utils.print_progress()
     return False
 
+def service_is_active(service_response):
+    desired = service_response.get('desiredCount')
+    if desired == 0:
+        return False
+    utils.print_progress()
+    return True
 
 # After tasks show as RUNNING they may not be healthy, you must check that.
 def tasks_are_healthy(ecs_client, cluster_name, service_name):
@@ -133,7 +139,7 @@ def poll_cluster_state(ecs_client, cluster_name, service_names,
                     continue
             service_name = service_response.get('serviceName')
             if service_is_stable(service_response):
-                if not tasks_are_healthy(ecs_client, cluster_name,
+                if service_is_active(service_response) and not tasks_are_healthy(ecs_client, cluster_name,
                                          service_name):
                     utils.print_warning(
                         f'{service_name} tasks are still not healthy'
