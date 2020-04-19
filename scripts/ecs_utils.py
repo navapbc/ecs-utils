@@ -134,6 +134,7 @@ def poll_cluster_state(ecs_client, cluster_name, service_names,
             is_active = service_response.get('desiredCount') > 0
             
             if service_is_stable(service_response):
+                # only check services that are active (desiredCount > 0)
                 if is_active and not tasks_are_healthy(ecs_client, cluster_name,
                                          service_name):
                     utils.print_warning(
