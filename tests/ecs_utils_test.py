@@ -30,6 +30,10 @@ BAD_SERVICE = copy.deepcopy(GOOD_SERVICE)
 BAD_SERVICE['services'][0]['deployments'][0]['status'] = 'BAD'
 BAD_SERVICE['services'][0]['runningCount'] = 1 
 
+INACTIVE_SERVICE = copy.deepcopy(GOOD_SERVICE)
+INACTIVE_SERVICE['services'][0]['desiredCount'] = 0
+INACTIVE_SERVICE['services'][0]['runningCount'] = 0 
+
 
 BAD_TASKS = {'tasks': [
     {'healthStatus': 'HEALTHY', 'taskArn': 'foo'},
@@ -46,6 +50,8 @@ TASKS = {
     'nextoken': None
 }
 
+EMPTY_TASKS = copy.deepcopy(TASKS)
+EMPTY_TASKS['taskArns'] = []
 
 
 class EcsTestCase(TestCase):
@@ -81,6 +87,15 @@ class EcsTestCase(TestCase):
         mock_client.list_tasks.return_value = TASKS
         mock_client.describe_tasks.return_value = GOOD_TASKS
         ecs_utils.poll_cluster_state(mock_client, 'service-foo', ['service-foo'], POLL_S)
+
+
+    @patch('boto3.client')
+    def test_poll_cluster_with_inactive_service(self, mock_boto):
+        mock_client = mock_boto.return_value
+        mock_client.describe_services.return_value = INACTIVE_SERVICE
+        mock_client.list_tasks.return_value = EMPTY_TASKS
+        mock_client.describe_tasks.side_effect = Exception('Tasks cannot be empty.')
+        ecs_utils.poll_cluster_state(mock_client, 'cluster-foo', ['service-foo'], POLL_S)
 
     @patch('scripts.ecs_utils.print_events')
     @patch('boto3.client')
