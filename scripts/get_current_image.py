@@ -32,7 +32,7 @@ def get_ecs_image_url(client, cluster, service):
         ).get('services')[0].get('taskDefinition')
     except Exception as err:
         sys.stderr.write(f'Service lookup failed: {err}')
-        sys.exit(1)
+        raise err
 
     try: 
         image = client.describe_task_definition(
@@ -40,7 +40,7 @@ def get_ecs_image_url(client, cluster, service):
         ).get('taskDefinition').get('containerDefinitions')[0].get('image')
     except Exception as err:
         sys.stderr.write(f'Task lookup failed: {err}')
-        sys.exit(1)
+        raise err
     
     return image
 
