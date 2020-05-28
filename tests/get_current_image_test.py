@@ -37,7 +37,7 @@ class ImageTestCase(TestCase):
         mock_client = mock_boto.return_value
         mock_client.describe_services.return_value = GOOD_SERVICE
         mock_client.describe_task_definition.return_value = {}
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(AttributeError):
             get_ecs_image_url(mock_client, 'cluster-foo', 'service-foo')
 
 if __name__ == '__main__':
