@@ -29,17 +29,26 @@ def parse_args():
             help='Ignore events older than --stale_s (seconds). default 60s')
     parser.add_argument('--timeout-s', default=POLLING_TIMEOUT,
             help='Polling timeout --timeout_s (seconds). default 300s')
+    parser.add_argument('--deployment-id',
+            help='Deployment Id --deployment_id.')
     return parser.parse_args()
 
 def main():
     args = parse_args()
     region = args.region
     ecs_client = boto3.client('ecs', region)
-    ecs_utils.poll_deployment_state(
-        ecs_client, args.cluster_name, args.app_name,
+
+    if args.deployment_id:
+        codedeploy_client = boto3.client('codedeploy', region)
+        ecs_utils.poll_codedeploy_deployment_state(
+        codedeploy_client, args.deployment_id, polling_timeout=int(args.timeout_s), stale_s=int(args.stale_s)
+        )
+    else:
+        ecs_utils.poll_deployment_state(
+        ecs_client, codedeploy_client, args.cluster_name, args.app_name,
         polling_timeout=int(args.timeout_s), stale_s=int(args.stale_s)
-    )
-    
+        )
+
 
 if __name__ == '__main__':
     main()

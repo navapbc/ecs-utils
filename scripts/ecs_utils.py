@@ -179,6 +179,7 @@ def poll_deployment_state(ecs_client, cluster_name, service_name,
             continue
         service_response = response.get('services')[0]
 
+
         deployments = service_response.get('deployments')
         if deployment_is_stable(deployments[0], start_time, stale_s):
             if not tasks_are_healthy(ecs_client, cluster_name, service_name):
@@ -193,3 +194,37 @@ def poll_deployment_state(ecs_client, cluster_name, service_name,
             break
 
 
+def poll_codedeploy_deployment_state(codedeploy_client, deployment_id, polling_timeout, stale_s=None):
+    """
+    Poll deployment for service in Code Deploy
+    """
+
+    utils.print_info(
+        f'Polling Code Deploy for deployment: {deployment_id}'
+    )
+    start_time = time.time()
+    last_response = []
+    while True:
+        time.sleep(SLEEP_TIME_S)
+        if (time.time() - start_time) > polling_timeout:
+            if last_response: print_events(last_response)
+            raise TimeoutException(
+                f'Polling timed out! Check status for deployment {deployment_id}.'
+            )
+        code_deploy_response = codedeploy_client.get_deployment(deploymentId=deployment_id)
+        last_response = code_deploy_response
+        if not code_deploy_response.get('deploymentInfo'):
+            utils.print_warning(
+                'get_deployment got an empty services response'
+            )
+            continue
+        
+        deployment_info = code_deploy_response.get('deploymentInfo')
+        
+        instance_termination_wait_time_started = deployment_info.get('instanceTerminationWaitTimeStarted')
+        if instance_termination_wait_time_started:
+            utils.print_info('Replacement task set is now serving traffic.')
+            break
+        utils.print_warning(
+            'Deployment is still ongoing. Original task set is serving traffic.'
+        )
