@@ -35,9 +35,12 @@ def main():
     args = parse_args()
     region = args.region
     ecs_client = boto3.client('ecs', region)
+    ecs_utils.poll_cluster_state(ecs_client, args.cluster_name, [args.app_name],
+              polling_timeout=int(args.timeout_s), stale_s=int(args.stale_s)
+                  )
     ecs_utils.poll_deployment_state(
         ecs_client, args.cluster_name, args.app_name,
-        polling_timeout=int(args.timeout_s), stale_s=int(args.stale_s)
+        polling_timeout=int(args.timeout_s)
     )
     
 

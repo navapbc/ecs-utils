@@ -30,17 +30,12 @@ def print_events(response, size=10):
                 break
 
 
-def deployment_is_stable(deployment, start_time, stale_s):
+def deployment_is_stable(deployment, start_time):
     dt = deployment.get('createdAt').strftime('%s')
     running = deployment.get('runningCount')
     desired = deployment.get('desiredCount')
     status = deployment.get('status')
     age_s = start_time - int(dt)
-    if stale_s and (age_s > stale_s):
-        utils.print_warning(
-            f'Deployment state info may be stale ({int(age_s)}s), polling'
-        )
-        return False
     if (running == desired) and status == 'PRIMARY':
         return True
     return False
@@ -60,9 +55,11 @@ def has_recent_event(service_response, start_time, stale_s):
 
 
 def service_is_stable(service_response):
+    """A steady state ECS event as well as the right number of containers are running."""
     running = service_response.get('runningCount')
     desired = service_response.get('desiredCount')
-    if desired == running:
+    print(service_response.get('events')[0])
+    if desired == running and 'steady state' in service_response.get('events')[0].get('message'):
         return True
     utils.print_progress()
     return False
@@ -152,7 +149,7 @@ def poll_cluster_state(ecs_client, cluster_name, service_names,
 
 
 def poll_deployment_state(ecs_client, cluster_name, service_name,
-                          polling_timeout, stale_s=None):
+                          polling_timeout):
     """
     Poll service in an ECS cluster for a complete deployment.
     """
@@ -180,7 +177,8 @@ def poll_deployment_state(ecs_client, cluster_name, service_name,
         service_response = response.get('services')[0]
 
         deployments = service_response.get('deployments')
-        if deployment_is_stable(deployments[0], start_time, stale_s):
+        print(deployments)
+        if deployment_is_stable(deployments[0], start_time):
             if not tasks_are_healthy(ecs_client, cluster_name, service_name):
                 utils.print_warning(
                     f'{service_name} tasks are still not healthy'
