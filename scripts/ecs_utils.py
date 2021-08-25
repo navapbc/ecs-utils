@@ -58,8 +58,10 @@ def service_is_stable(service_response):
     """A steady state ECS event as well as the right number of containers are running."""
     running = service_response.get('runningCount')
     desired = service_response.get('desiredCount')
-    print(service_response.get('events')[0])
-    if desired == running and 'steady state' in service_response.get('events')[0].get('message'):
+    events = service_response.get('events')
+    event_msg = ""
+    if events: event_msg = events[0].get('message')
+    if desired == running and 'steady state' in event_msg:
         return True
     utils.print_progress()
     return False

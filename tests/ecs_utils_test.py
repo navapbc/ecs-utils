@@ -12,6 +12,14 @@ ecs_utils.SLEEP_TIME_S = 0
 # note: we override time.time()
 POLL_S = 10
 
+GOOD_EVENTS =  [
+    {'id': '638948eb-97bc-49ce-a7a4-af1fc6216983', 'createdAt': None, 'message': '(service service-foo) has reached a steady state.'},
+    {'id': '7434ea49-99f0-4568-ba68-143913b8b215', 'createdAt': None, 'message': '(service service-foo) registered 1 targets in (target-group foo)'}
+]
+BAD_EVENTS =  [
+    {'id': '7434ea49-99f0-4568-ba68-143913b8b215', 'createdAt': None, 'message': '(service service-foo) registered 1 targets in (target-group foo)'}
+]
+
 GOOD_SERVICE = {
     'services': [{
         'serviceName': 'service-foo',
@@ -22,17 +30,20 @@ GOOD_SERVICE = {
             'desiredCount': 2,
             'status': 'PRIMARY',
             'createdAt': datetime.time()
-        }]
+        }],
+        'events': GOOD_EVENTS
     }]
 }
 
 BAD_SERVICE = copy.deepcopy(GOOD_SERVICE)
 BAD_SERVICE['services'][0]['deployments'][0]['status'] = 'BAD'
-BAD_SERVICE['services'][0]['runningCount'] = 1 
+BAD_SERVICE['services'][0]['runningCount'] = 1
+BAD_SERVICE['events'] = BAD_EVENTS
 
 INACTIVE_SERVICE = copy.deepcopy(GOOD_SERVICE)
 INACTIVE_SERVICE['services'][0]['desiredCount'] = 0
 INACTIVE_SERVICE['services'][0]['runningCount'] = 0 
+INACTIVE_SERVICE['events'] = BAD_EVENTS
 
 
 BAD_TASKS = {'tasks': [
@@ -52,6 +63,7 @@ TASKS = {
 
 EMPTY_TASKS = copy.deepcopy(TASKS)
 EMPTY_TASKS['taskArns'] = []
+
 
 
 class EcsTestCase(TestCase):
