@@ -37,8 +37,6 @@ def deployment_is_stable(deployment, start_time, stale_s):
     status = deployment.get('status')
     rolloutState = deployment.get('rolloutState')
     age_s = start_time - int(dt)
-    print(rolloutState)
-    print(status)
     if stale_s and (age_s > stale_s):
         utils.print_warning(
             f'Deployment state info may be stale ({int(age_s)}s), polling'

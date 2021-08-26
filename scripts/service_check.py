@@ -15,7 +15,7 @@ from scripts import utils
 from scripts import ecs_utils
 
 STALE_S = 120
-POLLING_TIMEOUT = 300
+POLLING_TIMEOUT = 360
 
 def parse_args():
     parser = argparse.ArgumentParser(description = 'Checks an ECS service status')
