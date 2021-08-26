@@ -179,7 +179,6 @@ def poll_deployment_state(ecs_client, cluster_name, service_name,
         service_response = response.get('services')[0]
 
         deployments = service_response.get('deployments')
-        print(deployments)
         if deployment_is_stable(deployments[0], start_time):
             if not tasks_are_healthy(ecs_client, cluster_name, service_name):
                 utils.print_warning(
