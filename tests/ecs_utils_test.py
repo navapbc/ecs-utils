@@ -21,14 +21,19 @@ GOOD_SERVICE = {
             'runningCount': 2,
             'desiredCount': 2,
             'status': 'PRIMARY',
+            'rolloutState': 'COMPLETED',
             'createdAt': datetime.time()
         }]
     }]
 }
 
+INPROGRESS_SERVICE = copy.deepcopy(GOOD_SERVICE)
+INPROGRESS_SERVICE['services'][0]['deployments'][0]['rolloutState'] = 'IN_PROGRESS'
+
 BAD_SERVICE = copy.deepcopy(GOOD_SERVICE)
 BAD_SERVICE['services'][0]['deployments'][0]['status'] = 'BAD'
-BAD_SERVICE['services'][0]['runningCount'] = 1 
+BAD_SERVICE['services'][0]['deployments'][0]['rolloutState'] = 'BAD'
+BAD_SERVICE['services'][0]['runningCount'] = 1
 
 INACTIVE_SERVICE = copy.deepcopy(GOOD_SERVICE)
 INACTIVE_SERVICE['services'][0]['desiredCount'] = 0
@@ -105,6 +110,7 @@ class EcsTestCase(TestCase):
         with self.assertRaises(ecs_utils.TimeoutException):
             ecs_utils.poll_cluster_state(mock_client, 'cluster-foo', ['service-foo'], POLL_S)
 
+
     @patch('scripts.ecs_utils.print_events')
     @patch('boto3.client')
     def test_poll_cluster_bad_tasks(self, mock_boto, mock_print_events):
@@ -123,6 +129,14 @@ class EcsTestCase(TestCase):
         mock_client.list_tasks.return_value = TASKS
         mock_client.describe_tasks.side_effect = [BAD_TASKS, GOOD_TASKS]
         ecs_utils.poll_deployment_state(mock_client, 'cluster-foo', 'service-foo', POLL_S)
+
+    @patch('scripts.ecs_utils.print_events')
+    @patch('boto3.client')
+    def test_poll_deployment_in_progres_timeout(self, mock_boto, mock_print_events):
+        mock_client = mock_boto.return_value
+        mock_client.describe_services.return_value = INPROGRESS_SERVICE
+        with self.assertRaises(ecs_utils.TimeoutException):
+            ecs_utils.poll_deployment_state(mock_client, 'cluster-foo', ['service-foo'], POLL_S)
 
     @patch('scripts.ecs_utils.print_events')
     @patch('boto3.client')
