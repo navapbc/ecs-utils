@@ -128,7 +128,6 @@ def poll_cluster_state(ecs_client, cluster_name, service_names,
             if stale_s:
                 # check that the service has started to change based on events
                 if not has_recent_event(service_response, start_time, stale_s):
-                    print('not had recent')
                     continue
             service_name = service_response.get('serviceName')
             is_active = service_response.get('desiredCount') > 0
