@@ -8,10 +8,7 @@ from scripts import utils
 
 
 # polling interval
-SLEEP_TIME_S = 5
-
-PRINT_PROGRESS = utils.print_progress
-
+SLEEP_TIME_S = 10
 
 class TimeoutException(Exception):
     pass
@@ -35,14 +32,16 @@ def deployment_is_stable(deployment, start_time, stale_s):
     running = deployment.get('runningCount')
     desired = deployment.get('desiredCount')
     status = deployment.get('status')
+    rolloutState = deployment.get('rolloutState')
     age_s = start_time - int(dt)
     if stale_s and (age_s > stale_s):
         utils.print_warning(
             f'Deployment state info may be stale ({int(age_s)}s), polling'
         )
         return False
-    if (running == desired) and status == 'PRIMARY':
+    if (running == desired) and status == 'PRIMARY' and rolloutState == 'COMPLETED':
         return True
+    utils.print_warning(f"Rollout state: {rolloutState} desired tasks: {desired} running: {running}")
     return False
 
 
@@ -64,7 +63,6 @@ def service_is_stable(service_response):
     desired = service_response.get('desiredCount')
     if desired == running:
         return True
-    utils.print_progress()
     return False
 
 # After tasks show as RUNNING they may not be healthy, you must check that.
@@ -99,11 +97,11 @@ def tasks_are_healthy(ecs_client, cluster_name, service_name):
 def poll_cluster_state(ecs_client, cluster_name, service_names,
                        polling_timeout, stale_s=None):
     """
-    Poll services in an ECS cluster for steady state.
+    Poll services in an ECS cluster for service stability
     """
 
     utils.print_info(
-        f'Polling services: {service_names} in cluster: {cluster_name} with timeout: {polling_timeout}s'
+        f'Polling cluster services: {service_names} in cluster: {cluster_name} with timeout: {polling_timeout}s'
     )
     start_time = time.time()
     services = service_names.copy()
@@ -111,7 +109,8 @@ def poll_cluster_state(ecs_client, cluster_name, service_names,
     last_response = []
     while services:
         time.sleep(SLEEP_TIME_S)
-        if (time.time() - start_time) > polling_timeout:
+        elapsed = time.time() - start_time
+        if elapsed > polling_timeout:
             print_events(last_response)
             raise TimeoutException(
                 f'Polling timed out! Check {service_names} status.'
@@ -147,7 +146,7 @@ def poll_cluster_state(ecs_client, cluster_name, service_names,
                     services.remove(service_name)
                 elapsed = int(time.time() - start_time)
                 utils.print_success(
-                    f'{service_name} is in a steady state. Elapsed: {elapsed}s'
+                    f'{service_name} tasks are healthy. Elapsed: {elapsed}s'
                 )
 
 
@@ -158,7 +157,7 @@ def poll_deployment_state(ecs_client, cluster_name, service_name,
     """
 
     utils.print_info(
-        f'Polling service: {service_name} in cluster: {cluster_name}'
+        f'Polling for deploy state service: {service_name} in cluster: {cluster_name}'
     )
     start_time = time.time()
     last_response = []
@@ -181,6 +180,7 @@ def poll_deployment_state(ecs_client, cluster_name, service_name,
 
         deployments = service_response.get('deployments')
         if deployment_is_stable(deployments[0], start_time, stale_s):
+            # double check that tasks are healthy
             if not tasks_are_healthy(ecs_client, cluster_name, service_name):
                 utils.print_warning(
                     f'{service_name} tasks are still not healthy'

@@ -17,8 +17,6 @@ import time
 from scripts import utils
 from scripts import ecs_utils
 
-PRINT_PROGRESS = utils.print_progress
-
 SLEEP_TIME_S = 5
 # polling timeout for ECS steady state after instance launch, or for draining
 # note, in some cases, instances will not finish draining until the previous
@@ -178,7 +176,7 @@ def rolling_replace_instances(ecs, ec2, cluster_name, batches, ami_id, force, dr
                 instance_id = container_instance.get('ec2InstanceId')
                 running_tasks = container_instance.get('runningTasksCount')
                 if running_tasks > 0:
-                    PRINT_PROGRESS()
+                    utils.print_progress()
                     continue
                 if instance_id not in done_instances:
                     utils.print_info(f'{instance_id} is drained, terminate!')

@@ -72,7 +72,7 @@ Note: the script assumes that you have container health checks configured for an
 
 ### service-check
 
-This script polls an ECS service after a task configuration change (e.g. docker image update) and returns 0 when all tasks show container 'HEALTHY' and the deployment 'PRIMARY' with the desired number of tasks running.
+This script polls an ECS service after a task configuration change (e.g. docker image update) and returns 0 when all tasks show container 'HEALTHY' and the deployment 'PRIMARY' has a rolloutState of 'COMPLETED' with the desired number of tasks running. This check is meant for rolling deploy ECS services.
 
 Usage:
 ```
